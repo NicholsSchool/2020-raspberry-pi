@@ -327,10 +327,6 @@ public final class Main {
 
         CvSource cvStream = CameraServer.getInstance().putVideo("Pi Output", 320, 240);
 
-        // Default is 10Hz
-        ntinst.setUpdateRate(0.01);
-        
-
         NetworkTable table = ntinst.getTable("vision");
 
         // RetroPipeline retroPipeline = new RetroPipeline();
@@ -353,6 +349,7 @@ public final class Main {
             table.getEntry("phi").setDouble(pipeline.getTheta());
 
             cvStream.putFrame(pipeline.getDst());
+            ntinst.flush();
         };
 
         // start image processing on camera 0 if present
@@ -368,6 +365,7 @@ public final class Main {
         for (;;) {
             try {
                 Thread.sleep(10000);
+                System.gc();
             } catch (InterruptedException ex) {
                 return;
             }
