@@ -26,15 +26,7 @@ import edu.wpi.first.vision.VisionPipeline;
  * Vision Pipeline for 2020 season
  *
  */
-public class RetroPipeline implements VisionPipeline{
-
-    private static final Scalar BLUE = new Scalar(255, 0, 0), GREEN = new Scalar(0, 255, 0),
-            RED = new Scalar(0, 0, 255), YELLOW = new Scalar(0, 255, 255), ORANGE = new Scalar(0, 165, 255),
-            MAGENTA = new Scalar(255, 0, 255);
-    
-    private static final double FOCAL_LENGTH = 740; // In pixels, needs tuning if res is changed
-    private static final double HFOV = 61;
-    private static final double VFOV = 34.3;
+public class RetroPipeline implements VisionPipeline {
 
     private Mat dst;
     private Mat bitmask;
@@ -42,9 +34,9 @@ public class RetroPipeline implements VisionPipeline{
     private MatOfPoint target;
     private Point[] vertices;
     private Point center;
-    
+
     private Mat intrinsics;
-    
+
     private Mat rvec;
     private Mat tvec;
 
@@ -53,32 +45,32 @@ public class RetroPipeline implements VisionPipeline{
         if (src.empty()) {
             return;
         }
-        
+
         // dst = new Mat();
         // src.copyTo(dst);
         dst = src;
-        
+
         mask();
 
         getTarget();
-        
-        if(target == null) {
-        	return;
+
+        if (target == null) {
+            return;
         }
 
         getVertices();
-        
-        if(vertices.length != 4) {
-        	return;
+
+        if (vertices.length != 4) {
+            return;
         }
-        
+
         getCenter();
-        
+
         // solvePnP();
-        
+
         // reproject();
     }
-    
+
     private void mask() {
         // Filter in bright objects
         bitmask = new Mat();
@@ -94,70 +86,69 @@ public class RetroPipeline implements VisionPipeline{
             // Sometimes the Mat format gets messed up when switching cameras
             System.out.println(e.getMessage());
         }
-        
+
         // Save the largest
         double largestPerimeter = 0;
 
         for (MatOfPoint contour : contours) {
-            Imgproc.drawContours(dst, Arrays.asList(contour), -1, RED);
-        	
-          	double perimeter = Imgproc.arcLength(new MatOfPoint2f(contour.toArray()), true);
-          	
-          	if(perimeter > largestPerimeter) {
-          		target = contour;
-          		largestPerimeter = perimeter;
-          	}
+            Imgproc.drawContours(dst, Arrays.asList(contour), -1, Constants.RED);
+
+            double perimeter = Imgproc.arcLength(new MatOfPoint2f(contour.toArray()), true);
+
+            if (perimeter > largestPerimeter) {
+                target = contour;
+                largestPerimeter = perimeter;
+            }
         }
     }
-    
-    private void getVertices() {    	
+
+    private void getVertices() {
         // Get Convex Hull
         MatOfInt indexes = new MatOfInt();
         Imgproc.convexHull(target, indexes);
         MatOfPoint2f hull = extractPoints(target, indexes);
-                
+
         // Get Approximation
-      	double perimeter = Imgproc.arcLength(hull, true);
+        double perimeter = Imgproc.arcLength(hull, true);
         MatOfPoint2f approx = new MatOfPoint2f();
         Imgproc.approxPolyDP(hull, approx, perimeter * 0.01, true);
-        Imgproc.drawContours(dst, Arrays.asList(new MatOfPoint(approx.toArray())), -1, ORANGE);
+        Imgproc.drawContours(dst, Arrays.asList(new MatOfPoint(approx.toArray())), -1, Constants.ORANGE);
 
         // Get sub-pixel locations of the vertices
         TermCriteria criteria = new TermCriteria(TermCriteria.EPS + TermCriteria.COUNT, 40, 0.001);
         Imgproc.cornerSubPix(bitmask, approx, new Size(5, 5), new Size(-1, -1), criteria);
-        
+
         // Sort vertices
-    	vertices = approx.toArray();
-    	Arrays.sort(vertices, new Comparator<Point>() {
-			@Override
-			public int compare(Point p1, Point p2) {
-				return (int)(p1.x - p2.x);
-			}
-    	});
-    	
-    	
-    	for(Point p : vertices) {
-    		Imgproc.drawMarker(dst, p, YELLOW);
-    	}
+        vertices = approx.toArray();
+        Arrays.sort(vertices, new Comparator<Point>() {
+            @Override
+            public int compare(Point p1, Point p2) {
+                return (int) (p1.x - p2.x);
+            }
+        });
+
+        for (Point p : vertices) {
+            Imgproc.drawMarker(dst, p, Constants.YELLOW);
+        }
     }
-    
+
     private void getCenter() {
-    	double x = (vertices[0].x + vertices[3].x) / 2;
-    	double y = (vertices[0].y + vertices[3].y) / 2;
-    	
-    	center = new Point(x, y);
-		Imgproc.drawMarker(dst, center, GREEN);
+        double x = (vertices[0].x + vertices[3].x) / 2;
+        double y = (vertices[0].y + vertices[3].y) / 2;
+
+        center = new Point(x, y);
+        Imgproc.drawMarker(dst, center, Constants.GREEN);
     }
-    
+
     @SuppressWarnings("unused")
     private void solvePnP() {
         // All camera intrinsics are in pixel values
         double principalOffsetX = dst.width() / 2;
         double principalOffsetY = dst.height() / 2;
         intrinsics = Mat.zeros(3, 3, CvType.CV_64FC1);
-        intrinsics.put(0, 0, FOCAL_LENGTH);
+        intrinsics.put(0, 0, Constants.FOCAL_LENGTH);
         intrinsics.put(0, 2, principalOffsetX);
-        intrinsics.put(1, 1, FOCAL_LENGTH);
+        intrinsics.put(1, 1, Constants.FOCAL_LENGTH);
         intrinsics.put(1, 2, principalOffsetY);
         intrinsics.put(2, 2, 1);
 
@@ -171,9 +162,10 @@ public class RetroPipeline implements VisionPipeline{
 
         rvec = new Mat();
         tvec = new Mat();
-        Calib3d.solvePnP(new MatOfPoint3f(worldPts), new MatOfPoint2f(vertices), intrinsics, new MatOfDouble(), rvec, tvec);
+        Calib3d.solvePnP(new MatOfPoint3f(worldPts), new MatOfPoint2f(vertices), intrinsics, new MatOfDouble(), rvec,
+                tvec);
     }
-    
+
     @SuppressWarnings("unused")
     private void reproject() {
         // Set up and draw 3D box with the corners on the outside of the target
@@ -195,17 +187,19 @@ public class RetroPipeline implements VisionPipeline{
 
         drawBox(reprojPts1, reprojPts2);
     }
-    
+
     private void drawBox(MatOfPoint2f imagePoints, MatOfPoint2f shiftedImagePoints) {
-        Imgproc.drawContours(dst, Arrays.asList(new MatOfPoint(imagePoints.toArray())), -1, GREEN, 2);
+        Imgproc.drawContours(dst, Arrays.asList(new MatOfPoint(imagePoints.toArray())), -1, Constants.GREEN, 2);
 
         for (int i = 0; i < imagePoints.rows(); i++) {
-            Imgproc.line(dst, new Point(imagePoints.get(i, 0)), new Point(shiftedImagePoints.get(i, 0)), BLUE, 2);
+            Imgproc.line(dst, new Point(imagePoints.get(i, 0)), new Point(shiftedImagePoints.get(i, 0)), Constants.BLUE,
+                    2);
         }
 
-        Imgproc.drawContours(dst, Arrays.asList(new MatOfPoint(shiftedImagePoints.toArray())), -1, MAGENTA, 2);
+        Imgproc.drawContours(dst, Arrays.asList(new MatOfPoint(shiftedImagePoints.toArray())), -1, Constants.MAGENTA,
+                2);
     }
-    
+
     private MatOfPoint2f extractPoints(MatOfPoint contour, MatOfInt indexes) {
         int[] arrIndex = indexes.toArray();
         Point[] arrContour = contour.toArray();
@@ -215,25 +209,25 @@ public class RetroPipeline implements VisionPipeline{
             arrPoints[i] = arrContour[arrIndex[i]];
         }
 
-        MatOfPoint2f hull = new MatOfPoint2f(); 
+        MatOfPoint2f hull = new MatOfPoint2f();
         hull.fromArray(arrPoints);
-        return hull; 
+        return hull;
     }
 
     public double getTheta() {
-    	if(center == null || dst == null) {
-    		return 0;
-    	}
-    	
-    	return (0.5 - center.x / dst.width()) * HFOV;
+        if (center == null || dst == null) {
+            return 0;
+        }
+
+        return (0.5 - center.x / dst.width()) * Constants.HFOV;
     }
-    
+
     public double getPhi() {
-    	if(center == null || dst == null) {
-    		return 0;
-    	}
-    	
-    	return (0.5 - center.y / dst.height()) * VFOV;
+        if (center == null || dst == null) {
+            return 0;
+        }
+
+        return (0.5 - center.y / dst.height()) * Constants.VFOV;
     }
 
     public Mat getDst() {

@@ -17,15 +17,7 @@ import edu.wpi.first.vision.VisionPipeline;
  * Vision Pipeline for 2020 season
  *
  */
-public class TestPipeline implements VisionPipeline{
-
-    @SuppressWarnings("unused")
-    private static final Scalar BLUE = new Scalar(255, 0, 0), GREEN = new Scalar(0, 255, 0),
-            RED = new Scalar(0, 0, 255), YELLOW = new Scalar(0, 255, 255), ORANGE = new Scalar(0, 165, 255),
-            MAGENTA = new Scalar(255, 0, 255);
-    
-    private static final double HFOV = 61;
-    private static final double VFOV = 34.3;
+public class TestPipeline implements VisionPipeline {
 
     private Mat dst;
     private Mat bitmask;
@@ -44,18 +36,18 @@ public class TestPipeline implements VisionPipeline{
         // dst = new Mat();
         // src.copyTo(dst);
         dst = src;
-        
+
         mask();
 
         getTarget();
 
-        if(target == null) {
+        if (target == null) {
             return;
         }
 
         getCenter();
     }
-    
+
     private void mask() {
         // Filter in bright objects
         bitmask = new Mat();
@@ -71,19 +63,19 @@ public class TestPipeline implements VisionPipeline{
             // Sometimes the Mat format gets messed up when switching cameras
             System.out.println(e.getMessage());
         }
-        
+
         // Save the largest contour
         double largest = 0;
 
         for (MatOfPoint contour : contours) {
-            Imgproc.drawContours(dst, Arrays.asList(contour), -1, RED);
+            Imgproc.drawContours(dst, Arrays.asList(contour), -1, Constants.RED);
 
             double area = Imgproc.contourArea(contour);
-          	
-          	if(area > largest) {
-          		target = contour;
-          		largest = area;
-          	}
+
+            if (area > largest) {
+                target = contour;
+                largest = area;
+            }
         }
     }
 
@@ -91,23 +83,23 @@ public class TestPipeline implements VisionPipeline{
         Moments m = Imgproc.moments(target);
         cx = m.m10 / m.m00;
         cy = m.m01 / m.m00;
-        Imgproc.drawMarker(dst, new Point(cx, cy), BLUE);
+        Imgproc.drawMarker(dst, new Point(cx, cy), Constants.BLUE);
     }
 
-    public double getTheta() {    	
-        if(target == null | dst == null) {
+    public double getTheta() {
+        if (target == null | dst == null) {
             return 0;
         }
 
-    	return (0.5 - cx / dst.width()) * HFOV;
+        return (0.5 - cx / dst.width()) * Constants.HFOV;
     }
-    
+
     public double getPhi() {
-        if(target == null | dst == null) {
+        if (target == null | dst == null) {
             return 0;
         }
 
-    	return (0.5 - cy / dst.height()) * VFOV;
+        return (0.5 - cy / dst.height()) * Constants.VFOV;
     }
 
     public Mat getDst() {

@@ -329,17 +329,6 @@ public final class Main {
 
         NetworkTable table = ntinst.getTable("vision");
 
-        // RetroPipeline retroPipeline = new RetroPipeline();
-        // Listener<RetroPipeline> rListener = pipeline -> {
-        //     SmartDashboard.putNumber("Theta: ", pipeline.getTheta());
-        //     SmartDashboard.putNumber("Phi: ", pipeline.getPhi());
-
-        //     table.getEntry("theta").setDouble(pipeline.getTheta());
-        //     table.getEntry("phi").setDouble(pipeline.getTheta());
-
-        //     cvStream.putFrame(pipeline.getDst());
-        // };
-
         TestPipeline testPipeline = new TestPipeline();
         Listener<TestPipeline> tListener = pipeline -> {
             SmartDashboard.putNumber("Theta: ", pipeline.getTheta());
