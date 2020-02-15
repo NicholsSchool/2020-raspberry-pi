@@ -11,4 +11,6 @@ public class Constants {
     public static final double FOCAL_LENGTH = 740; // In pixels, needs tuning if res is changed
     public static final double HFOV = 61;
     public static final double VFOV = 34.3;
+
+    public static final double METERS_PER_INCH = 0.0254;
 }

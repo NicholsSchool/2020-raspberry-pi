@@ -27,11 +27,11 @@ public class TestPipeline implements VisionPipeline {
     private double cy;
 
     public void process(Mat src) {
+        reset();
+
         if (src.empty()) {
             return;
         }
-
-        target = null;
 
         // dst = new Mat();
         // src.copyTo(dst);
@@ -46,6 +46,14 @@ public class TestPipeline implements VisionPipeline {
         }
 
         getCenter();
+    }
+
+    private void reset() {
+        dst = null;
+        bitmask = null;
+        target = null;
+        cx = 0;
+        cy = 0;
     }
 
     private void mask() {
@@ -87,7 +95,7 @@ public class TestPipeline implements VisionPipeline {
     }
 
     public double getTheta() {
-        if (target == null | dst == null) {
+        if (target == null) {
             return 0;
         }
 
@@ -95,7 +103,7 @@ public class TestPipeline implements VisionPipeline {
     }
 
     public double getPhi() {
-        if (target == null | dst == null) {
+        if (target == null) {
             return 0;
         }
 

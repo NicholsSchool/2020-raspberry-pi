@@ -325,25 +325,48 @@ public final class Main {
             startSwitchedCamera(config);
         }
 
-        CvSource cvStream = CameraServer.getInstance().putVideo("Pi Output", 320, 240);
+        // Start camera stream
+        CvSource cvStream = CameraServer.getInstance().putVideo("Pi Output", 640, 480);
 
-        NetworkTable table = ntinst.getTable("vision");
+        // Start local server for physics model
+        NetworkTableInstance localinst = NetworkTableInstance.create();
+        localinst.startServer();
+        NetworkTable localTable = localinst.getTable("DistanceTable");
 
-        TestPipeline testPipeline = new TestPipeline();
-        Listener<TestPipeline> tListener = pipeline -> {
-            SmartDashboard.putNumber("Theta: ", pipeline.getTheta());
-            SmartDashboard.putNumber("Phi: ", pipeline.getPhi());
+        // Run neopixel code
+        try {
+            Runtime.getRuntime().exec("sudo python3 lights.py");
+            System.out.println("Starting lights...");
+        } catch (IOException e) {
+            System.out.println("No light code!");
+        }
 
-            table.getEntry("theta").setDouble(pipeline.getTheta());
-            table.getEntry("phi").setDouble(pipeline.getTheta());
-
-            cvStream.putFrame(pipeline.getDst());
-            ntinst.flush();
-        };
+        // Run physics code
+        Process physics = null;
+        try {
+            physics = Runtime.getRuntime().exec("python3 physics_model.py");
+            System.out.println("Starting physics model...");
+        } catch (IOException e) {
+            System.out.println("No physics model!");
+        }
 
         // start image processing on camera 0 if present
         if (cameras.size() >= 1) {
-            VisionThread visionThread = new VisionThread(cameras.get(0), testPipeline, tListener);
+            RetroPipeline rPipeline = new RetroPipeline();
+            Listener<RetroPipeline> rListener = pipeline -> {
+                SmartDashboard.putString("Vision Displacement", pipeline.getX() + ", " + pipeline.getY() + ", " + pipeline.getZ());
+    
+                // server local data for physics model
+                localTable.getEntry("x").setDouble(pipeline.getX());
+                localTable.getEntry("y").setDouble(pipeline.getY());
+                localTable.getEntry("z").setDouble(pipeline.getZ());
+    
+                cvStream.putFrame(pipeline.getDst());
+                ntinst.flush();
+                localinst.flush();
+            };
+
+            VisionThread visionThread = new VisionThread(cameras.get(0), rPipeline, rListener);
 
             visionThread.start();
         }
@@ -354,6 +377,9 @@ public final class Main {
         for (;;) {
             try {
                 Thread.sleep(10000);
+
+                System.out.println("Physics is alive: " + physics.isAlive());
+                System.out.println("Collecting garbage...");
                 System.gc();
             } catch (InterruptedException ex) {
                 return;

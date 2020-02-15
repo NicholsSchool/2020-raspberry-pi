@@ -39,8 +39,10 @@ public class RetroPipeline implements VisionPipeline {
 
     private Mat rvec;
     private Mat tvec;
+    private Mat robotTvec;
 
     public void process(Mat src) {
+        reset();
 
         if (src.empty()) {
             return;
@@ -65,16 +67,27 @@ public class RetroPipeline implements VisionPipeline {
         }
 
         getCenter();
+        solvePnP();
+        reproject();
+        transform();
+    }
 
-        // solvePnP();
-
-        // reproject();
+    private void reset() {
+        dst = null;
+        bitmask = null;
+        target = null;
+        vertices = null;
+        center = null;
+        intrinsics = null;
+        rvec = null;
+        tvec = null;
+        robotTvec = null;
     }
 
     private void mask() {
         // Filter in bright objects
         bitmask = new Mat();
-        Core.inRange(dst, new Scalar(0, 50, 0), new Scalar(200, 255, 200), bitmask);
+        Core.inRange(dst, new Scalar(0, 90, 0), new Scalar(60, 255, 60), bitmask);
     }
 
     private void getTarget() {
@@ -140,7 +153,6 @@ public class RetroPipeline implements VisionPipeline {
         Imgproc.drawMarker(dst, center, Constants.GREEN);
     }
 
-    @SuppressWarnings("unused")
     private void solvePnP() {
         // All camera intrinsics are in pixel values
         double principalOffsetX = dst.width() / 2;
@@ -155,10 +167,10 @@ public class RetroPipeline implements VisionPipeline {
         // 3D axes is same as 2D image axes, right is positive x, down is positive y,
         // forward is positive z (a clockwise axes system), values are in inches
         Point3[] worldPts = new Point3[4];
-        worldPts[0] = new Point3(-19.625, 0, 0);
-        worldPts[1] = new Point3(-9.8125, 17, 0);
-        worldPts[2] = new Point3(9.8125, 17, 0);
-        worldPts[3] = new Point3(19.625, 0, 0);
+        worldPts[0] = new Point3(-19.625 * Constants.METERS_PER_INCH, 0, 0);
+        worldPts[1] = new Point3(-9.8125 * Constants.METERS_PER_INCH, 17 * Constants.METERS_PER_INCH, 0);
+        worldPts[2] = new Point3(9.8125 * Constants.METERS_PER_INCH, 17 * Constants.METERS_PER_INCH, 0);
+        worldPts[3] = new Point3(19.625 * Constants.METERS_PER_INCH, 0, 0);
 
         rvec = new Mat();
         tvec = new Mat();
@@ -166,22 +178,21 @@ public class RetroPipeline implements VisionPipeline {
                 tvec);
     }
 
-    @SuppressWarnings("unused")
     private void reproject() {
         // Set up and draw 3D box with the corners on the outside of the target
         Point3[] worldPts1 = new Point3[4];
-        worldPts1[0] = new Point3(-19.625, 17, 0);
-        worldPts1[1] = new Point3(-19.625, -17, 0);
-        worldPts1[2] = new Point3(19.625, -17, 0);
-        worldPts1[3] = new Point3(19.625, 17, 0);
+        worldPts1[0] = new Point3(-19.625 * Constants.METERS_PER_INCH, 17 * Constants.METERS_PER_INCH, 0);
+        worldPts1[1] = new Point3(-19.625 * Constants.METERS_PER_INCH, -17 * Constants.METERS_PER_INCH, 0);
+        worldPts1[2] = new Point3(19.625 * Constants.METERS_PER_INCH, -17 * Constants.METERS_PER_INCH, 0);
+        worldPts1[3] = new Point3(19.625 * Constants.METERS_PER_INCH, 17 * Constants.METERS_PER_INCH, 0);
         MatOfPoint2f reprojPts1 = new MatOfPoint2f();
         Calib3d.projectPoints(new MatOfPoint3f(worldPts1), rvec, tvec, intrinsics, new MatOfDouble(), reprojPts1);
 
         Point3[] worldPts2 = new Point3[4];
-        worldPts2[0] = new Point3(-19.625, 17, -12);
-        worldPts2[1] = new Point3(-19.625, -17, -12);
-        worldPts2[2] = new Point3(19.625, -17, -12);
-        worldPts2[3] = new Point3(19.625, 17, -12);
+        worldPts2[0] = new Point3(-19.625 * Constants.METERS_PER_INCH, 17 * Constants.METERS_PER_INCH, -12 * Constants.METERS_PER_INCH);
+        worldPts2[1] = new Point3(-19.625 * Constants.METERS_PER_INCH, -17 * Constants.METERS_PER_INCH, -12 * Constants.METERS_PER_INCH);
+        worldPts2[2] = new Point3(19.625 * Constants.METERS_PER_INCH, -17 * Constants.METERS_PER_INCH, -12 * Constants.METERS_PER_INCH);
+        worldPts2[3] = new Point3(19.625 * Constants.METERS_PER_INCH, 17 * Constants.METERS_PER_INCH, -12 * Constants.METERS_PER_INCH);
         MatOfPoint2f reprojPts2 = new MatOfPoint2f();
         Calib3d.projectPoints(new MatOfPoint3f(worldPts2), rvec, tvec, intrinsics, new MatOfDouble(), reprojPts2);
 
@@ -214,20 +225,50 @@ public class RetroPipeline implements VisionPipeline {
         return hull;
     }
 
-    public double getTheta() {
-        if (center == null || dst == null) {
-            return 0;
-        }
+    // Transform vectors to relative to the robot
+    private void transform() {
+    	robotTvec = tvec.clone();
+        Mat rotationMat = new Mat();
+        rvec.copyTo(rotationMat);
 
-        return (0.5 - center.x / dst.width()) * Constants.HFOV;
+        // Account for x and z rotation, keep y rotation
+        rotationMat.put(1, 0, 0);
+
+        // Convert 3x1 rotation vector to 3x3 rotation matrix
+        Calib3d.Rodrigues(rotationMat, rotationMat);
+        // Transpose of rotation matrix is the same as its inverse
+        Core.transpose(rotationMat, rotationMat);
+
+        // Apply inverse rotation to tvec
+        Core.gemm(rotationMat, robotTvec, 1, new Mat(), 0, robotTvec);
     }
 
-    public double getPhi() {
-        if (center == null || dst == null) {
+    public double getDistance() {
+        return Math.sqrt(getX() * getX() + getY() * getY() + getZ() * getZ());
+    }
+
+    public double getX() {
+        if(robotTvec == null) {
             return 0;
         }
 
-        return (0.5 - center.y / dst.height()) * Constants.VFOV;
+        return robotTvec.get(0, 0)[0];
+    }
+
+    public double getY() {
+        if(robotTvec == null) {
+            return 0;
+        }
+
+        return robotTvec.get(1, 0)[0];
+    }
+
+    public double getZ() {
+        if(robotTvec == null) {
+            return 0;
+        }
+
+        return robotTvec.get(2, 0)[0];
     }
 
     public Mat getDst() {
