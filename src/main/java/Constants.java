@@ -13,25 +13,25 @@ public class Constants {
     public static final double METERS_PER_INCH = 0.0254;
 
     // Our target for practice was made incorrectly
-    public static final double TARGET_ERROR = 1.0 * Constants.METERS_PER_INCH;
+    public static final double TARGET_ERROR = 1.0;
 
     public static final Point3[] MODEL_PTS = {
-        new Point3(-19.625 * Constants.METERS_PER_INCH - TARGET_ERROR, 0, 0),
-        new Point3(-9.8125 * Constants.METERS_PER_INCH - TARGET_ERROR, 17 * Constants.METERS_PER_INCH, 0),
-        new Point3(9.8125 * Constants.METERS_PER_INCH + TARGET_ERROR, 17 * Constants.METERS_PER_INCH, 0),
-        new Point3(19.625 * Constants.METERS_PER_INCH + TARGET_ERROR, 0, 0)};
+        new Point3(-19.625 - TARGET_ERROR, 0, 0),
+        new Point3(-9.8125 - TARGET_ERROR, 17, 0),
+        new Point3(9.8125 + TARGET_ERROR, 17, 0),
+        new Point3(19.625 + TARGET_ERROR, 0, 0)};
 
     public static final Point3[] REPROJECT_PTS_1 = {
-        new Point3(-19.625 * Constants.METERS_PER_INCH - TARGET_ERROR, 17 * Constants.METERS_PER_INCH, 0),
-        new Point3(-19.625 * Constants.METERS_PER_INCH - TARGET_ERROR, -17 * Constants.METERS_PER_INCH, 0),
-        new Point3(19.625 * Constants.METERS_PER_INCH + TARGET_ERROR, -17 * Constants.METERS_PER_INCH, 0),
-        new Point3(19.625 * Constants.METERS_PER_INCH + TARGET_ERROR, 17 * Constants.METERS_PER_INCH, 0)};
+        new Point3(-19.625 - TARGET_ERROR, 17, 0),
+        new Point3(-19.625 - TARGET_ERROR, -17, 0),
+        new Point3(19.625 + TARGET_ERROR, -17, 0),
+        new Point3(19.625 + TARGET_ERROR, 17, 0)};
 
     public static final Point3[] REPROJECT_PTS_2 = {
-        new Point3(-19.625 * Constants.METERS_PER_INCH - TARGET_ERROR, 17 * Constants.METERS_PER_INCH, -12 * Constants.METERS_PER_INCH),
-        new Point3(-19.625 * Constants.METERS_PER_INCH - TARGET_ERROR, -17 * Constants.METERS_PER_INCH, -12 * Constants.METERS_PER_INCH),
-        new Point3(19.625 * Constants.METERS_PER_INCH + TARGET_ERROR, -17 * Constants.METERS_PER_INCH, -12 * Constants.METERS_PER_INCH),
-        new Point3(19.625 * Constants.METERS_PER_INCH + TARGET_ERROR, 17 * Constants.METERS_PER_INCH, -12 * Constants.METERS_PER_INCH)};
+        new Point3(-19.625 - TARGET_ERROR, 17, -12),
+        new Point3(-19.625 - TARGET_ERROR, -17, -12),
+        new Point3(19.625 + TARGET_ERROR, -17, -12),
+        new Point3(19.625 + TARGET_ERROR, 17, -12)};
 
 
     // Lifecam-3000 info

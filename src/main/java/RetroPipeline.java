@@ -15,7 +15,6 @@ import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.first.vision.VisionPipeline;
@@ -263,6 +262,7 @@ public class RetroPipeline implements VisionPipeline {
 
     public Mat getDst() {
         if(dst != null) {
+            // Streaming full quality mats costs a lot of proccessing time
             Imgproc.resize(dst, dst, new Size(Constants.WIDTH / 4, Constants.HEIGHT / 4));
         }
         return dst;

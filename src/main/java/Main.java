@@ -332,6 +332,7 @@ public final class Main {
         NetworkTableInstance localinst = NetworkTableInstance.create();
         localinst.startServer();
         NetworkTable localTable = localinst.getTable("DistanceTable");
+        NetworkTable remoteTable = ntinst.getTable("Vision");
 
         // Run neopixel code
         try {
@@ -354,14 +355,16 @@ public final class Main {
         if (cameras.size() >= 1) {
             RetroPipeline rPipeline = new RetroPipeline();
             Listener<RetroPipeline> rListener = pipeline -> {
-                SmartDashboard.putString("Vision Displacement",
-                        pipeline.getX() / Constants.METERS_PER_INCH + ", " + pipeline.getY() / Constants.METERS_PER_INCH
-                                + ", " + pipeline.getZ() / Constants.METERS_PER_INCH);
+                SmartDashboard.putString("Vision Displacement", pipeline.getX() + ", " + pipeline.getY() + ", " + pipeline.getZ());
+
+                remoteTable.getEntry("x").setDouble(pipeline.getX());
+                remoteTable.getEntry("y").setDouble(pipeline.getY());
+                remoteTable.getEntry("z").setDouble(pipeline.getZ());
 
                 // server local data for physics model
-                localTable.getEntry("x").setDouble(pipeline.getX());
-                localTable.getEntry("y").setDouble(pipeline.getY());
-                localTable.getEntry("z").setDouble(pipeline.getZ());
+                localTable.getEntry("x").setDouble(pipeline.getX() * Constants.METERS_PER_INCH);
+                localTable.getEntry("y").setDouble(pipeline.getY() * Constants.METERS_PER_INCH);
+                localTable.getEntry("z").setDouble(pipeline.getZ() * Constants.METERS_PER_INCH);
 
                 cvStream.putFrame(pipeline.getDst());
                 ntinst.flush();
