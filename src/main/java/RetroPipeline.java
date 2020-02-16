@@ -166,35 +166,19 @@ public class RetroPipeline implements VisionPipeline {
 
         // 3D axes is same as 2D image axes, right is positive x, down is positive y,
         // forward is positive z (a clockwise axes system), values are in inches
-        Point3[] worldPts = new Point3[4];
-        worldPts[0] = new Point3(-19.625 * Constants.METERS_PER_INCH, 0, 0);
-        worldPts[1] = new Point3(-9.8125 * Constants.METERS_PER_INCH, 17 * Constants.METERS_PER_INCH, 0);
-        worldPts[2] = new Point3(9.8125 * Constants.METERS_PER_INCH, 17 * Constants.METERS_PER_INCH, 0);
-        worldPts[3] = new Point3(19.625 * Constants.METERS_PER_INCH, 0, 0);
-
         rvec = new Mat();
         tvec = new Mat();
-        Calib3d.solvePnP(new MatOfPoint3f(worldPts), new MatOfPoint2f(vertices), intrinsics, new MatOfDouble(), rvec,
+        Calib3d.solvePnP(new MatOfPoint3f(Constants.MODEL_PTS), new MatOfPoint2f(vertices), intrinsics, new MatOfDouble(), rvec,
                 tvec);
     }
 
     private void reproject() {
         // Set up and draw 3D box with the corners on the outside of the target
-        Point3[] worldPts1 = new Point3[4];
-        worldPts1[0] = new Point3(-19.625 * Constants.METERS_PER_INCH, 17 * Constants.METERS_PER_INCH, 0);
-        worldPts1[1] = new Point3(-19.625 * Constants.METERS_PER_INCH, -17 * Constants.METERS_PER_INCH, 0);
-        worldPts1[2] = new Point3(19.625 * Constants.METERS_PER_INCH, -17 * Constants.METERS_PER_INCH, 0);
-        worldPts1[3] = new Point3(19.625 * Constants.METERS_PER_INCH, 17 * Constants.METERS_PER_INCH, 0);
         MatOfPoint2f reprojPts1 = new MatOfPoint2f();
-        Calib3d.projectPoints(new MatOfPoint3f(worldPts1), rvec, tvec, intrinsics, new MatOfDouble(), reprojPts1);
+        Calib3d.projectPoints(new MatOfPoint3f(Constants.REPROJECT_PTS_1), rvec, tvec, intrinsics, new MatOfDouble(), reprojPts1);
 
-        Point3[] worldPts2 = new Point3[4];
-        worldPts2[0] = new Point3(-19.625 * Constants.METERS_PER_INCH, 17 * Constants.METERS_PER_INCH, -12 * Constants.METERS_PER_INCH);
-        worldPts2[1] = new Point3(-19.625 * Constants.METERS_PER_INCH, -17 * Constants.METERS_PER_INCH, -12 * Constants.METERS_PER_INCH);
-        worldPts2[2] = new Point3(19.625 * Constants.METERS_PER_INCH, -17 * Constants.METERS_PER_INCH, -12 * Constants.METERS_PER_INCH);
-        worldPts2[3] = new Point3(19.625 * Constants.METERS_PER_INCH, 17 * Constants.METERS_PER_INCH, -12 * Constants.METERS_PER_INCH);
         MatOfPoint2f reprojPts2 = new MatOfPoint2f();
-        Calib3d.projectPoints(new MatOfPoint3f(worldPts2), rvec, tvec, intrinsics, new MatOfDouble(), reprojPts2);
+        Calib3d.projectPoints(new MatOfPoint3f(Constants.REPROJECT_PTS_2), rvec, tvec, intrinsics, new MatOfDouble(), reprojPts2);
 
         drawBox(reprojPts1, reprojPts2);
     }

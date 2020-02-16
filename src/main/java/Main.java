@@ -354,13 +354,15 @@ public final class Main {
         if (cameras.size() >= 1) {
             RetroPipeline rPipeline = new RetroPipeline();
             Listener<RetroPipeline> rListener = pipeline -> {
-                SmartDashboard.putString("Vision Displacement", pipeline.getX() + ", " + pipeline.getY() + ", " + pipeline.getZ());
-    
+                SmartDashboard.putString("Vision Displacement",
+                        pipeline.getX() / Constants.METERS_PER_INCH + ", " + pipeline.getY() / Constants.METERS_PER_INCH
+                                + ", " + pipeline.getZ() / Constants.METERS_PER_INCH);
+
                 // server local data for physics model
                 localTable.getEntry("x").setDouble(pipeline.getX());
                 localTable.getEntry("y").setDouble(pipeline.getY());
                 localTable.getEntry("z").setDouble(pipeline.getZ());
-    
+
                 cvStream.putFrame(pipeline.getDst());
                 ntinst.flush();
                 localinst.flush();
@@ -378,7 +380,9 @@ public final class Main {
             try {
                 Thread.sleep(10000);
 
-                System.out.println("Physics is alive: " + physics.isAlive());
+                if (physics != null) {
+                    System.out.println("Physics is alive: " + physics.isAlive());
+                }
                 System.out.println("Collecting garbage...");
                 System.gc();
             } catch (InterruptedException ex) {
