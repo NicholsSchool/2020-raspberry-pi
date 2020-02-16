@@ -7,16 +7,15 @@ import org.opencv.core.Core;
 import org.opencv.core.CvException;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
-import org.opencv.core.Point3;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.first.vision.VisionPipeline;
@@ -87,7 +86,7 @@ public class RetroPipeline implements VisionPipeline {
     private void mask() {
         // Filter in bright objects
         bitmask = new Mat();
-        Core.inRange(dst, new Scalar(0, 90, 0), new Scalar(60, 255, 60), bitmask);
+        Core.inRange(dst, new Scalar(0, 70, 0), new Scalar(90, 255, 90), bitmask);
     }
 
     private void getTarget() {
@@ -155,30 +154,37 @@ public class RetroPipeline implements VisionPipeline {
 
     private void solvePnP() {
         // All camera intrinsics are in pixel values
-        double principalOffsetX = dst.width() / 2;
-        double principalOffsetY = dst.height() / 2;
+        // double principalOffsetX = dst.width() / 2;
+        // double principalOffsetY = dst.height() / 2;
+        // intrinsics = Mat.zeros(3, 3, CvType.CV_64FC1);
+        // intrinsics.put(0, 0, Constants.FOCAL_LENGTH);
+        // intrinsics.put(0, 2, principalOffsetX);
+        // intrinsics.put(1, 1, Constants.FOCAL_LENGTH);
+        // intrinsics.put(1, 2, principalOffsetY);
+        // intrinsics.put(2, 2, 1);
+
         intrinsics = Mat.zeros(3, 3, CvType.CV_64FC1);
-        intrinsics.put(0, 0, Constants.FOCAL_LENGTH);
-        intrinsics.put(0, 2, principalOffsetX);
-        intrinsics.put(1, 1, Constants.FOCAL_LENGTH);
-        intrinsics.put(1, 2, principalOffsetY);
-        intrinsics.put(2, 2, 1);
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                intrinsics.put(i, j, Constants.INTRINSICS_640_BY_360[i][j]);
+            }
+        }
 
         // 3D axes is same as 2D image axes, right is positive x, down is positive y,
         // forward is positive z (a clockwise axes system), values are in inches
         rvec = new Mat();
         tvec = new Mat();
-        Calib3d.solvePnP(new MatOfPoint3f(Constants.MODEL_PTS), new MatOfPoint2f(vertices), intrinsics, new MatOfDouble(), rvec,
+        Calib3d.solvePnP(new MatOfPoint3f(Constants.MODEL_PTS), new MatOfPoint2f(vertices), intrinsics, Constants.DISTORTION_COEFFS_640_BY_360, rvec,
                 tvec);
     }
 
     private void reproject() {
         // Set up and draw 3D box with the corners on the outside of the target
         MatOfPoint2f reprojPts1 = new MatOfPoint2f();
-        Calib3d.projectPoints(new MatOfPoint3f(Constants.REPROJECT_PTS_1), rvec, tvec, intrinsics, new MatOfDouble(), reprojPts1);
+        Calib3d.projectPoints(new MatOfPoint3f(Constants.REPROJECT_PTS_1), rvec, tvec, intrinsics, Constants.DISTORTION_COEFFS_640_BY_360, reprojPts1);
 
         MatOfPoint2f reprojPts2 = new MatOfPoint2f();
-        Calib3d.projectPoints(new MatOfPoint3f(Constants.REPROJECT_PTS_2), rvec, tvec, intrinsics, new MatOfDouble(), reprojPts2);
+        Calib3d.projectPoints(new MatOfPoint3f(Constants.REPROJECT_PTS_2), rvec, tvec, intrinsics, Constants.DISTORTION_COEFFS_640_BY_360, reprojPts2);
 
         drawBox(reprojPts1, reprojPts2);
     }
@@ -256,6 +262,9 @@ public class RetroPipeline implements VisionPipeline {
     }
 
     public Mat getDst() {
+        if(dst != null) {
+            Imgproc.resize(dst, dst, new Size(Constants.WIDTH / 4, Constants.HEIGHT / 4));
+        }
         return dst;
     }
 

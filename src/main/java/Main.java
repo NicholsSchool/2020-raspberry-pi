@@ -326,7 +326,7 @@ public final class Main {
         }
 
         // Start camera stream
-        CvSource cvStream = CameraServer.getInstance().putVideo("Pi Output", 640, 480);
+        CvSource cvStream = CameraServer.getInstance().putVideo("Pi Output", Constants.WIDTH, Constants.HEIGHT);
 
         // Start local server for physics model
         NetworkTableInstance localinst = NetworkTableInstance.create();
