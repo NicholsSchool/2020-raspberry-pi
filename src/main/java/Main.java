@@ -356,10 +356,12 @@ public final class Main {
             RetroPipeline rPipeline = new RetroPipeline();
             Listener<RetroPipeline> rListener = pipeline -> {
                 SmartDashboard.putString("Vision Displacement", pipeline.getX() + ", " + pipeline.getY() + ", " + pipeline.getZ());
+                SmartDashboard.putNumber("Vision Distance", pipeline.getDistance());
 
                 remoteTable.getEntry("x").setDouble(pipeline.getX());
                 remoteTable.getEntry("y").setDouble(pipeline.getY());
                 remoteTable.getEntry("z").setDouble(pipeline.getZ());
+                remoteTable.getEntry("distance").setDouble(pipeline.getDistance());
 
                 // server local data for physics model
                 localTable.getEntry("x").setDouble(pipeline.getX() * Constants.METERS_PER_INCH);
