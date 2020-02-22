@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -351,6 +352,16 @@ public final class Main {
             System.out.println("No physics model!");
         }
 
+        Process gyro = null;
+        Scanner gyroIn = null;
+        try {
+            gyro = Runtime.getRuntime().exec("python3 gyro.py");
+            gyroIn = new Scanner(gyro.getInputStream());
+            System.out.println("Starting gyro...");
+        } catch (IOException e) {
+            System.out.println("No gyro code!");
+        }
+
         // start image processing on camera 0 if present
         if (cameras.size() >= 1) {
             RetroPipeline rPipeline = new RetroPipeline();
@@ -368,7 +379,9 @@ public final class Main {
                 localTable.getEntry("y").setDouble(pipeline.getY() * Constants.METERS_PER_INCH);
                 localTable.getEntry("z").setDouble(pipeline.getZ() * Constants.METERS_PER_INCH);
 
-                cvStream.putFrame(pipeline.getDst());
+                if(readyForFrame()) {
+                    cvStream.putFrame(pipeline.getDst());
+                }
                 ntinst.flush();
                 localinst.flush();
             };
@@ -383,17 +396,34 @@ public final class Main {
         // loop forever
         for (;;) {
             try {
-                Thread.sleep(10000);
+                // Thread.sleep(10000);
+                Thread.sleep(1);
+                
 
                 if (physics != null) {
-                    System.out.println("Physics is alive: " + physics.isAlive());
+                    SmartDashboard.putBoolean("Physics Model Alive", physics.isAlive());
                 }
-                System.out.println("Collecting garbage...");
-                System.gc();
+
+                if (gyro != null) {
+                    if(gyroIn.hasNext()) {
+                        remoteTable.getEntry("gyro").setDouble(Double.parseDouble(gyroIn.next()));
+                    }
+                }
+                // System.out.println("Collecting garbage...");
+                // System.gc();
             } catch (InterruptedException ex) {
                 return;
             }
         }
 
+    }
+
+    private static long timeOfLastFrame = 0;
+    private static boolean readyForFrame() {
+        if(System.currentTimeMillis() - timeOfLastFrame > Constants.STREAM_FRAME_TIME_MS) {
+            timeOfLastFrame = System.currentTimeMillis();
+            return true;
+        }
+        return false;
     }
 }

@@ -173,7 +173,7 @@ public class RetroPipeline implements VisionPipeline {
         // forward is positive z (a clockwise axes system), values are in inches
         rvec = new Mat();
         tvec = new Mat();
-        Calib3d.solvePnP(new MatOfPoint3f(Constants.PRACTICE_MODEL_PTS), new MatOfPoint2f(vertices), intrinsics, Constants.DISTORTION_COEFFS_640_BY_360, rvec,
+        Calib3d.solvePnP(new MatOfPoint3f(Constants.MODEL_PTS), new MatOfPoint2f(vertices), intrinsics, Constants.DISTORTION_COEFFS_640_BY_360, rvec,
                 tvec);
     }
 
@@ -264,7 +264,7 @@ public class RetroPipeline implements VisionPipeline {
     public Mat getDst() {
         if(dst != null) {
             // Streaming full quality mats costs a lot of proccessing time
-            Imgproc.resize(dst, dst, new Size(Constants.WIDTH / 4, Constants.HEIGHT / 4));
+            Imgproc.resize(dst, dst, new Size(Constants.WIDTH / Constants.STREAM_RES_SCALE, Constants.HEIGHT / Constants.STREAM_RES_SCALE));
         }
         return dst;
     }

@@ -10,6 +10,9 @@ public class Constants {
     public static final Scalar ORANGE = new Scalar(0, 165, 255);
     public static final Scalar MAGENTA = new Scalar(255, 0, 255);
 
+    public static final int STREAM_RES_SCALE = 4;
+    public static final long STREAM_FRAME_TIME_MS = 100;
+
     public static final double METERS_PER_INCH = 0.0254;
 
     public static final double INNER_GOAL_OFFSET = 29.25;
