@@ -352,16 +352,6 @@ public final class Main {
             System.out.println("No physics model!");
         }
 
-        Process gyro = null;
-        Scanner gyroIn = null;
-        try {
-            gyro = Runtime.getRuntime().exec("python3 gyro.py");
-            gyroIn = new Scanner(gyro.getInputStream());
-            System.out.println("Starting gyro...");
-        } catch (IOException e) {
-            System.out.println("No gyro code!");
-        }
-
         // start image processing on camera 0 if present
         if (cameras.size() >= 1) {
             RetroPipeline rPipeline = new RetroPipeline();
@@ -399,16 +389,10 @@ public final class Main {
                 // Thread.sleep(10000);
                 Thread.sleep(1);
                 
-
                 if (physics != null) {
                     SmartDashboard.putBoolean("Physics Model Alive", physics.isAlive());
                 }
 
-                if (gyro != null) {
-                    if(gyroIn.hasNext()) {
-                        remoteTable.getEntry("gyro").setDouble(Double.parseDouble(gyroIn.next()));
-                    }
-                }
                 // System.out.println("Collecting garbage...");
                 // System.gc();
             } catch (InterruptedException ex) {
