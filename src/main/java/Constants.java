@@ -18,17 +18,19 @@ public class Constants {
     public static final double INNER_GOAL_OFFSET = 29.25;
 
     // Our target for practice was made incorrectly
-    public static final Point3[] PRACTICE_MODEL_PTS = {
+    private static final Point3[] PRACTICE_MODEL_PTS = {
         new Point3(-20.625, 0, 0 - INNER_GOAL_OFFSET),
         new Point3(-11.0, 16.875, 0 - INNER_GOAL_OFFSET),
         new Point3(10.875, 17, 0 - INNER_GOAL_OFFSET),
         new Point3(21.75, 0, 0 - INNER_GOAL_OFFSET)};
 
-    public static final Point3[] MODEL_PTS = {
-        new Point3(-19.625, 0, 0 - INNER_GOAL_OFFSET),
-        new Point3(-9.8125, 17, 0 - INNER_GOAL_OFFSET),
-        new Point3(9.8125, 17, 0 - INNER_GOAL_OFFSET),
-        new Point3(19.625, 0, 0 - INNER_GOAL_OFFSET)};
+    public static final Point3[] MODEL_PTS = PRACTICE_MODEL_PTS;
+
+    // public static final Point3[] MODEL_PTS = {
+    //     new Point3(-19.625, 0, 0 - INNER_GOAL_OFFSET),
+    //     new Point3(-9.8125, 17, 0 - INNER_GOAL_OFFSET),
+    //     new Point3(9.8125, 17, 0 - INNER_GOAL_OFFSET),
+    //     new Point3(19.625, 0, 0 - INNER_GOAL_OFFSET)};
 
     public static final Point3[] REPROJECT_PTS_1 = {
         new Point3(-19.625, 17, 0 - INNER_GOAL_OFFSET),

@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -386,8 +385,8 @@ public final class Main {
         // loop forever
         for (;;) {
             try {
-                // Thread.sleep(10000);
-                Thread.sleep(1);
+                Thread.sleep(10000);
+                // Thread.sleep(1);
                 
                 if (physics != null) {
                     SmartDashboard.putBoolean("Physics Model Alive", physics.isAlive());
