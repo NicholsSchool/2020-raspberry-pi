@@ -12,7 +12,6 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
-import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
@@ -24,7 +23,7 @@ import edu.wpi.first.vision.VisionPipeline;
  * Vision Pipeline for 2020 season
  *
  */
-public class RetroPipeline implements VisionPipeline {
+public class InfiniteRechargePipeline implements VisionPipeline {
 
     private Mat dst;
     private Mat bitmask;
@@ -85,7 +84,7 @@ public class RetroPipeline implements VisionPipeline {
     private void mask() {
         // Filter in bright objects
         bitmask = new Mat();
-        Core.inRange(dst, new Scalar(0, 70, 0), new Scalar(70, 255, 70), bitmask);
+        Core.inRange(dst, Constants.MASK_LOWER, Constants.MASK_UPPER, bitmask);
     }
 
     private void getTarget() {

@@ -353,8 +353,8 @@ public final class Main {
 
         // start image processing on camera 0 if present
         if (cameras.size() >= 1) {
-            RetroPipeline rPipeline = new RetroPipeline();
-            Listener<RetroPipeline> rListener = pipeline -> {
+            InfiniteRechargePipeline irPipeline = new InfiniteRechargePipeline();
+            Listener<InfiniteRechargePipeline> irListener = pipeline -> {
                 SmartDashboard.putString("Vision Displacement", pipeline.getX() + ", " + pipeline.getY() + ", " + pipeline.getZ());
                 SmartDashboard.putNumber("Vision Distance", pipeline.getDistance());
 
@@ -375,7 +375,7 @@ public final class Main {
                 localinst.flush();
             };
 
-            VisionThread visionThread = new VisionThread(cameras.get(0), rPipeline, rListener);
+            VisionThread visionThread = new VisionThread(cameras.get(0), irPipeline, irListener);
 
             visionThread.start();
         }

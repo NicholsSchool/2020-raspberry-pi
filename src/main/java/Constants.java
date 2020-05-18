@@ -17,6 +17,9 @@ public class Constants {
 
     public static final double INNER_GOAL_OFFSET = 29.25;
 
+    public static final Scalar MASK_LOWER = new Scalar(0, 70, 0);
+    public static final Scalar MASK_UPPER =  new Scalar(70, 255, 70);
+
     // Our target for practice was made incorrectly
     private static final Point3[] PRACTICE_MODEL_PTS = {
         new Point3(-20.625, 0, 0 - INNER_GOAL_OFFSET),
